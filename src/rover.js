@@ -6,7 +6,7 @@
   Map Example:
 
   (0,0)
-   	['P', 'P', 'P', 'C', 'P'],
+   	  ['P', 'P', 'P', 'C', 'P'],
 	  ['P', 'M', 'P', 'C', 'P'],
 	  ['P', 'M', 'P', 'C', 'P'],
 	  ['P', 'M', 'P', 'P', 'P'],
@@ -49,23 +49,25 @@
 
 const TERRAIN_TYPES = {
     'P': {
-        obstacle: false,
+        obstacle:    false,
         description: 'plains'
     },
     'M': {
-        obstacle: true,
+        obstacle:    true,
         description: 'mountains'
     },
     'C': {
-        obstacle: true,
+        obstacle:    true,
         description: 'crevasse'
     }
 };
 
-const STATUS_CODES = ['OK', 'OBSTACLE', 'INVALID_COMMAND'];
+const STATUS_CODES = {
+    OK: 'OK',
+    OBSTACLE: 'OBSTACLE',
+    INVALID_COMMAND: 'INVALID_COMMAND'
+};
 
-// top left corner is (X:0, Y:0)
-// bottom right is (X:4, Y:4)
 const WORLD = [
     ['P', 'P', 'P', 'C', 'P'],
     ['P', 'M', 'P', 'C', 'P'],
@@ -74,21 +76,59 @@ const WORLD = [
     ['P', 'M', 'P', 'P', 'P']
 ];
 
-const DIRECTIONS = ['N', 'S', 'E', 'W'];
+const DIRECTIONS = ['N', 'E', 'S', 'W'];
 const COMMANDS = ['L', 'R', 'F', 'B'];
 
-// Start: Exercise Code (Your Code)
-
-// YOUR CODE BELOW
-// NOTE: cntrl + enter to run tests
-// Note: integrated firebug for console logs
 class Rover {
     constructor(location, direction) {
+        this.location = location;
+        this.direction = direction;
+        this.commands = [];
     }
 
     command(commands) {
+        let status = STATUS_CODES.OK;
+
+        this.commands = commands;
+
+        for (let i = 0; i < commands.length; i++) {
+            const command = commands[i];
+
+            if (COMMANDS.includes(command)) {
+                switch (command) {
+                    case 'L':
+                        this.rotateLeft();
+                        break;
+
+                    case 'R':
+                        this.rotateRight();
+                        break;
+                }
+            } else {
+                status = STATUS_CODES.INVALID_COMMAND;
+
+                break;
+            }
+        }
+
+        return {
+            status,
+            loc: this.location,
+            dir: this.direction
+        };
     }
-    // ... feel free to extend
+
+    rotateLeft() {
+        const currentIndex = DIRECTIONS.indexOf(this.direction);
+
+        this.direction = currentIndex === 0 ? DIRECTIONS[DIRECTIONS.length - 1] : DIRECTIONS[currentIndex - 1];
+    }
+
+    rotateRight() {
+        const currentIndex = DIRECTIONS.indexOf(this.direction);
+
+        this.direction = currentIndex === DIRECTIONS.length - 1 ? DIRECTIONS[0] : DIRECTIONS[currentIndex + 1];
+    }
 }
 
 export default Rover;
