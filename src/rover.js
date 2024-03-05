@@ -47,20 +47,7 @@
   - https://en.wikipedia.org/wiki/Dijkstra's_algorithm
 */
 
-const TERRAIN_TYPES = {
-    'P': {
-        obstacle:    false,
-        description: 'plains'
-    },
-    'M': {
-        obstacle:    true,
-        description: 'mountains'
-    },
-    'C': {
-        obstacle:    true,
-        description: 'crevasse'
-    }
-};
+import { convertPathToCommands } from './utils.js';
 
 const STATUS_CODES = {
     OK:              'OK',
@@ -69,115 +56,109 @@ const STATUS_CODES = {
 };
 
 const COORDS_DIFF = {
-    'N': [0, -1],
-    'S': [0, 1],
-    'W': [-1, 0],
-    'E': [1, 0],
+    'N': [ 0, -1 ],
+    'S': [ 0, 1 ],
+    'W': [ -1, 0 ],
+    'E': [ 1, 0 ],
 }
 
-const WORLD = [
-    ['P', 'P', 'P', 'C', 'P'],
-    ['P', 'M', 'P', 'C', 'P'],
-    ['P', 'M', 'P', 'C', 'P'],
-    ['P', 'M', 'P', 'P', 'P'],
-    ['P', 'M', 'P', 'P', 'P']
-];
+const DIRECTIONS = [ 'N', 'E', 'S', 'W' ];
+// const COMMANDS = [ 'L', 'R', 'F', 'B' ];
 
-const DIRECTIONS = ['N', 'E', 'S', 'W'];
-const COMMANDS = ['L', 'R', 'F', 'B'];
+export function createRover(location, direction) {
+    let commands = [];
+    let world = null;
+    let status = STATUS_CODES.OK;
 
-class Rover {
-    location = [0, 0];
-    direction = DIRECTIONS[0];
-    commands = [];
-
-    #status = STATUS_CODES.OK;
-
-    constructor(location, direction) {
-        this.location = location;
-        this.direction = direction;
-        this.commands = [];
-        this.#status = STATUS_CODES.OK;
+    function canMoveTo(x, y) {
+        return world ? world.canMoveTo(x, y) : true;
     }
 
-    command(commands) {
-        this.commands = commands;
+    return {
+        commands,
+        direction,
+        location,
 
-        for (let i = 0; i < commands.length; i++) {
-            const command = commands[i];
+        setWorld(w) {
+            world = w;
+            return this;
+        },
 
-            if (COMMANDS.includes(command)) {
+        moveTo(x, y) {
+            const path = canMoveTo(x, y) ? world.buildPath(this.location, [ x, y ]) : [];
+            return this.command(convertPathToCommands(path, this.direction));
+        },
+
+        command(cmds) {
+            this.commands = cmds;
+            // console.log({direction: this.direction, location: this.location, commands: this.commands});
+
+            for (let i = 0; i < cmds.length; i++) {
+                const command = cmds[i];
+
                 switch (command) {
                     case 'L':
-                        this.#rotateLeft();
+                        this.rotateLeft();
                         break;
 
                     case 'R':
-                        this.#rotateRight();
+                        this.rotateRight();
                         break;
 
                     case 'F':
-                        this.#moveForward();
+                        this.moveForward();
                         break;
 
                     case 'B':
-                        this.#moveBackward();
+                        this.moveBackward();
+                        break;
+
+                    default:
+                        status = STATUS_CODES.INVALID_COMMAND;
                         break;
                 }
-            } else {
-                this.#status = STATUS_CODES.INVALID_COMMAND;
-                break;
             }
-        }
 
-        return {
-            status: this.#status,
-            loc: this.location,
-            dir: this.direction
-        };
-    }
+            // console.log({status, location: this.location, direction: this.direction});
+            return { status, loc: this.location, dir: this.direction };
+        },
 
-    #rotateLeft() {
-        const currentIndex = DIRECTIONS.indexOf(this.direction);
+        rotateLeft() {
+            const currentIndex = DIRECTIONS.indexOf(this.direction);
 
-        this.direction = currentIndex === 0 ? DIRECTIONS[DIRECTIONS.length - 1] : DIRECTIONS[currentIndex - 1];
-    }
+            this.direction = currentIndex === 0 ? DIRECTIONS[DIRECTIONS.length - 1] : DIRECTIONS[currentIndex - 1];
+        },
 
-    #rotateRight() {
-        const currentIndex = DIRECTIONS.indexOf(this.direction);
+        rotateRight() {
+            const currentIndex = DIRECTIONS.indexOf(this.direction);
 
-        this.direction = currentIndex === DIRECTIONS.length - 1 ? DIRECTIONS[0] : DIRECTIONS[currentIndex + 1];
-    }
+            this.direction = currentIndex === DIRECTIONS.length - 1 ? DIRECTIONS[0] : DIRECTIONS[currentIndex + 1];
+        },
 
-    #moveForward() {
-        const [x, y] = this.location;
-        const [dx, dy] = COORDS_DIFF[this.direction];
-        const newX = x + dx;
-        const newY = y + dy;
+        moveForward() {
+            const [ x, y ] = this.location;
+            const [ dx, dy ] = COORDS_DIFF[this.direction];
+            const newX = x + dx;
+            const newY = y + dy;
 
-        if (this.#canMoveTo(newX, newY)) {
-            this.location = [newX, newY];
-        } else {
-            this.#status = STATUS_CODES.OBSTACLE;
-        }
-    }
+            if (canMoveTo(newX, newY)) {
+                this.location = [ newX, newY ];
+            } else {
+                status = STATUS_CODES.OBSTACLE;
+            }
+        },
 
-    #moveBackward() {
-        const [x, y] = this.location;
-        const [dx, dy] = COORDS_DIFF[this.direction];
-        const newX = x - dx;
-        const newY = y - dy;
+        moveBackward() {
+            const [ x, y ] = this.location;
+            const [ dx, dy ] = COORDS_DIFF[this.direction];
+            const newX = x - dx;
+            const newY = y - dy;
 
-        if (this.#canMoveTo(newX, newY)) {
-            this.location = [newX, newY];
-        } else {
-            this.#status =  STATUS_CODES.OBSTACLE;
-        }
-    }
-
-    #canMoveTo(x, y) {
-        return y >= 0 && y < WORLD.length && x >= 0 && x < WORLD[y].length && !TERRAIN_TYPES[WORLD[y][x]].obstacle;
-    }
+            if (canMoveTo(newX, newY)) {
+                this.location = [ newX, newY ];
+            } else {
+                status = STATUS_CODES.OBSTACLE;
+            }
+        },
+    };
 }
-
-export default Rover;
