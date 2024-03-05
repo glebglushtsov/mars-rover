@@ -15,9 +15,7 @@ const TERRAIN_TYPES = {
     }
 };
 
-export function createWorld(field) {
-    let _field = field;
-
+function createWorld(field) {
     function getPossibleMoves(location) {
         const [ x, y ] = location;
 
@@ -27,7 +25,7 @@ export function createWorld(field) {
     }
 
     function canMoveTo(x, y) {
-        return y >= 0 && y < _field.length && x >= 0 && x < _field[y].length && !TERRAIN_TYPES[_field[y][x]].obstacle;
+        return y >= 0 && y < field.length && x >= 0 && x < field[y].length && !TERRAIN_TYPES[field[y][x]].obstacle;
     }
 
     return {
@@ -61,14 +59,14 @@ export function createWorld(field) {
 
             exploreLocation(start);
 
-            function buildPathFromExploration(current) {
-                if (current === start) {
+            function buildPathFromExploration(location) {
+                if (location === start) {
                     return [ start ];
                 }
 
-                const previous = explorationLog[current];
+                const previous = explorationLog[location];
                 const result = buildPathFromExploration(previous);
-                result.push(current);
+                result.push(location);
 
                 return result;
             }
@@ -80,3 +78,5 @@ export function createWorld(field) {
         }
     }
 }
+
+export default createWorld;

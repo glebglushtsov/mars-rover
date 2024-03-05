@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
-import { createRover } from './rover.js';
-import { createWorld } from './world.js';
+import createRover from './rover.js';
+import createWorld from './world.js';
 
 describe('Mars Rover', function () {
     let rover, world;
@@ -177,7 +177,7 @@ describe('Mars Rover', function () {
 
     describe('When given coordinates', function () {
         describe('When given valid coordinates', function () {
-            it('moves to the location', function () {
+            it('moves to a location', function () {
                 const state = rover.moveTo(4, 4);
 
                 expect(state).to.deep.equal({
@@ -189,7 +189,7 @@ describe('Mars Rover', function () {
         });
 
         describe('When given invalid coordinates', function () {
-            it('stays on the original location', function () {
+            it('stays at the original location', function () {
                 const state = rover.moveTo(-1, 0);
 
                 expect(state).to.deep.equal({

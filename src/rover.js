@@ -65,7 +65,7 @@ const COORDS_DIFF = {
 const DIRECTIONS = [ 'N', 'E', 'S', 'W' ];
 // const COMMANDS = [ 'L', 'R', 'F', 'B' ];
 
-export function createRover(location, direction) {
+function createRover(location, direction) {
     let commands = [];
     let world = null;
     let status = STATUS_CODES.OK;
@@ -162,3 +162,5 @@ export function createRover(location, direction) {
         },
     };
 }
+
+export default createRover;
