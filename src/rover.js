@@ -87,15 +87,20 @@ const DIRECTIONS = ['N', 'E', 'S', 'W'];
 const COMMANDS = ['L', 'R', 'F', 'B'];
 
 class Rover {
+    location = [0, 0];
+    direction = DIRECTIONS[0];
+    commands = [];
+
+    #status = STATUS_CODES.OK;
+
     constructor(location, direction) {
         this.location = location;
         this.direction = direction;
         this.commands = [];
+        this.#status = STATUS_CODES.OK;
     }
 
     command(commands) {
-        let status = STATUS_CODES.OK;
-
         this.commands = commands;
 
         for (let i = 0; i < commands.length; i++) {
@@ -104,58 +109,74 @@ class Rover {
             if (COMMANDS.includes(command)) {
                 switch (command) {
                     case 'L':
-                        this.rotateLeft();
+                        this.#rotateLeft();
                         break;
 
                     case 'R':
-                        this.rotateRight();
+                        this.#rotateRight();
                         break;
 
                     case 'F':
-                        this.moveForward();
+                        this.#moveForward();
                         break;
 
                     case 'B':
-                        this.moveBackward();
+                        this.#moveBackward();
                         break;
                 }
             } else {
-                status = STATUS_CODES.INVALID_COMMAND;
+                this.#status = STATUS_CODES.INVALID_COMMAND;
                 break;
             }
         }
 
         return {
-            status,
+            status: this.#status,
             loc: this.location,
             dir: this.direction
         };
     }
 
-    rotateLeft() {
+    #rotateLeft() {
         const currentIndex = DIRECTIONS.indexOf(this.direction);
 
         this.direction = currentIndex === 0 ? DIRECTIONS[DIRECTIONS.length - 1] : DIRECTIONS[currentIndex - 1];
     }
 
-    rotateRight() {
+    #rotateRight() {
         const currentIndex = DIRECTIONS.indexOf(this.direction);
 
         this.direction = currentIndex === DIRECTIONS.length - 1 ? DIRECTIONS[0] : DIRECTIONS[currentIndex + 1];
     }
 
-    moveForward() {
+    #moveForward() {
         const [x, y] = this.location;
         const [dx, dy] = COORDS_DIFF[this.direction];
+        const newX = x + dx;
+        const newY = y + dy;
 
-        this.location = [x + dx, y + dy];
+        if (this.#canMoveTo(newX, newY)) {
+            this.location = [newX, newY];
+        } else {
+            this.#status = STATUS_CODES.OBSTACLE;
+        }
     }
 
-    moveBackward() {
+    #moveBackward() {
         const [x, y] = this.location;
         const [dx, dy] = COORDS_DIFF[this.direction];
+        const newX = x - dx;
+        const newY = y - dy;
 
-        this.location = [x - dx, y - dy];
+        if (this.#canMoveTo(newX, newY)) {
+            this.location = [newX, newY];
+        } else {
+            this.#status =  STATUS_CODES.OBSTACLE;
+        }
+    }
+
+    #canMoveTo(x, y) {
+        return y >= 0 && y < WORLD.length && x >= 0 && x < WORLD[y].length && !TERRAIN_TYPES[WORLD[y][x]].obstacle;
     }
 }
 

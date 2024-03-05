@@ -89,7 +89,7 @@ describe('Mars Rover', function() {
         });
     });
 
-    describe.skip('When the rover encounters obstacles', function() {
+    describe('When the rover encounters obstacles', function() {
         describe('When encountering a mountain', function() {
             it('should stop and return status', function() {
                 const state = rover.command(['L', 'F']);
