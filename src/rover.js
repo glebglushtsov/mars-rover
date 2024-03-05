@@ -63,10 +63,17 @@ const TERRAIN_TYPES = {
 };
 
 const STATUS_CODES = {
-    OK: 'OK',
-    OBSTACLE: 'OBSTACLE',
+    OK:              'OK',
+    OBSTACLE:        'OBSTACLE',
     INVALID_COMMAND: 'INVALID_COMMAND'
 };
+
+const COORDS_DIFF = {
+    'N': [0, -1],
+    'S': [0, 1],
+    'W': [-1, 0],
+    'E': [1, 0],
+}
 
 const WORLD = [
     ['P', 'P', 'P', 'C', 'P'],
@@ -103,10 +110,17 @@ class Rover {
                     case 'R':
                         this.rotateRight();
                         break;
+
+                    case 'F':
+                        this.moveForward();
+                        break;
+
+                    case 'B':
+                        this.moveBackward();
+                        break;
                 }
             } else {
                 status = STATUS_CODES.INVALID_COMMAND;
-
                 break;
             }
         }
@@ -128,6 +142,20 @@ class Rover {
         const currentIndex = DIRECTIONS.indexOf(this.direction);
 
         this.direction = currentIndex === DIRECTIONS.length - 1 ? DIRECTIONS[0] : DIRECTIONS[currentIndex + 1];
+    }
+
+    moveForward() {
+        const [x, y] = this.location;
+        const [dx, dy] = COORDS_DIFF[this.direction];
+
+        this.location = [x + dx, y + dy];
+    }
+
+    moveBackward() {
+        const [x, y] = this.location;
+        const [dx, dy] = COORDS_DIFF[this.direction];
+
+        this.location = [x - dx, y - dy];
     }
 }
 

@@ -37,7 +37,7 @@ describe('Mars Rover', function() {
         });
     });
 
-    describe.skip('When the rover executes valid commands', function() {
+    describe('When the rover executes valid commands', function() {
         describe('When facing north', function() {
             describe('When moving forward', function() {
                 it('should move north one tile', function() {
