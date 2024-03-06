@@ -93,31 +93,15 @@ function createRover(location, direction) {
             this.commands = cmds;
             // console.log({direction: this.direction, location: this.location, commands: this.commands});
 
-            for (let i = 0; i < cmds.length; i++) {
-                const command = cmds[i];
-
-                switch (command) {
-                    case 'L':
-                        this.rotateLeft();
-                        break;
-
-                    case 'R':
-                        this.rotateRight();
-                        break;
-
-                    case 'F':
-                        this.moveForward();
-                        break;
-
-                    case 'B':
-                        this.moveBackward();
-                        break;
-
-                    default:
-                        status = STATUS_CODES.INVALID_COMMAND;
-                        break;
-                }
-            }
+            cmds.forEach(cmd => {
+                const commandsMap = {
+                    L: () => this.rotateLeft(),
+                    R: () => this.rotateRight(),
+                    F: () => this.moveForward(),
+                    B: () => this.moveBackward()
+                };
+                commandsMap[cmd] ? commandsMap[cmd]() : status = STATUS_CODES.INVALID_COMMAND;
+            })
 
             // console.log({status, location: this.location, direction: this.direction});
             return { status, loc: this.location, dir: this.direction };
@@ -125,13 +109,11 @@ function createRover(location, direction) {
 
         rotateLeft() {
             const currentIndex = DIRECTIONS.indexOf(this.direction);
-
             this.direction = currentIndex === 0 ? DIRECTIONS[DIRECTIONS.length - 1] : DIRECTIONS[currentIndex - 1];
         },
 
         rotateRight() {
             const currentIndex = DIRECTIONS.indexOf(this.direction);
-
             this.direction = currentIndex === DIRECTIONS.length - 1 ? DIRECTIONS[0] : DIRECTIONS[currentIndex + 1];
         },
 
@@ -141,11 +123,9 @@ function createRover(location, direction) {
             const newX = x + dx;
             const newY = y + dy;
 
-            if (canMoveTo(newX, newY)) {
-                this.location = [ newX, newY ];
-            } else {
-                status = STATUS_CODES.OBSTACLE;
-            }
+            canMoveTo(newX, newY) ?
+                this.location = [ newX, newY ] :
+                status = STATUS_CODES.OBSTACLE
         },
 
         moveBackward() {
@@ -154,11 +134,9 @@ function createRover(location, direction) {
             const newX = x - dx;
             const newY = y - dy;
 
-            if (canMoveTo(newX, newY)) {
-                this.location = [ newX, newY ];
-            } else {
-                status = STATUS_CODES.OBSTACLE;
-            }
+            canMoveTo(newX, newY) ?
+                this.location = [ newX, newY ] :
+                status = STATUS_CODES.OBSTACLE
         },
     };
 }
